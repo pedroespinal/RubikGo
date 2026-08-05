@@ -332,6 +332,12 @@ abstract class AppLocalizations {
   /// **'Invalid cube state'**
   String get validationTitle;
 
+  /// No description provided for @validationIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Some stickers haven\'t been painted yet. Complete all 6 faces before continuing.'**
+  String get validationIncomplete;
+
   /// No description provided for @validationColorCount.
   ///
   /// In en, this message translates to:
@@ -349,6 +355,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This color combination doesn\'t match a real physical cube. Check that every sticker matches your cube and try again.'**
   String get validationUnsolvable;
+
+  /// No description provided for @validationTwistedPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'A piece on an edge or corner looks rotated compared to your real cube (its colors are in the wrong order). Check the stickers where two or three faces meet.'**
+  String get validationTwistedPiece;
+
+  /// No description provided for @validationProbableSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Two stickers are likely swapped between two different spots — it\'s common to mix up similar colors like white/yellow or red/orange. Check each sticker against your real cube, especially near the borders between faces.'**
+  String get validationProbableSwap;
 
   /// No description provided for @validationOk.
   ///

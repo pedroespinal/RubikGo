@@ -47,10 +47,13 @@
   "manualPickerSolve": "Solve",
 
   "validationTitle": "Invalid cube state",
+  "validationIncomplete": "Some stickers haven't been painted yet. Complete all 6 faces before continuing.",
   "validationColorCount": "Each color must appear exactly 9 times. Check: {colors}.",
   "@validationColorCount": {"placeholders": {"colors": {"type": "String"}}},
   "validationDuplicateCenters": "The 6 center pieces must all be different colors.",
   "validationUnsolvable": "This color combination doesn't match a real physical cube. Check that every sticker matches your cube and try again.",
+  "validationTwistedPiece": "A piece on an edge or corner looks rotated compared to your real cube (its colors are in the wrong order). Check the stickers where two or three faces meet.",
+  "validationProbableSwap": "Two stickers are likely swapped between two different spots — it's common to mix up similar colors like white/yellow or red/orange. Check each sticker against your real cube, especially near the borders between faces.",
   "validationOk": "OK",
 
   "solutionTitle": "Solution",

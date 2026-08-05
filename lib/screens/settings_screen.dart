@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/prefs_service.dart';
@@ -14,13 +15,14 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _checking = false;
-  String? _statusMessage;
+  bool _checkFailed = false;
+  UpdateCheckResult? _result;
 
   Future<void> _checkForUpdates() async {
-    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _checking = true;
-      _statusMessage = null;
+      _checkFailed = false;
+      _result = null;
     });
 
     final info = await PackageInfo.fromPlatform();
@@ -29,14 +31,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() {
       _checking = false;
-      if (result == null) {
-        _statusMessage = l10n.settingsUpdateError;
-      } else if (result.hasUpdate) {
-        _statusMessage = l10n.settingsUpdateAvailable(result.latestVersion);
-      } else {
-        _statusMessage = l10n.settingsUpToDate;
-      }
+      _checkFailed = result == null;
+      _result = result;
     });
+  }
+
+  // Tapping the row after finding an update must actually take you to it —
+  // it previously just re-ran the same check again, so nothing seemed to
+  // happen when you tapped it (the home screen's banner already did this
+  // correctly; this screen didn't).
+  Future<void> _openLatestRelease() async {
+    final releaseUrl = _result?.releaseUrl;
+    if (releaseUrl == null) return;
+    await launchUrl(Uri.parse(releaseUrl), mode: LaunchMode.externalApplication);
+  }
+
+  String? _statusText(AppLocalizations l10n) {
+    if (_checking) return l10n.settingsCheckingUpdate;
+    if (_checkFailed) return l10n.settingsUpdateError;
+    final result = _result;
+    if (result == null) return null;
+    return result.hasUpdate ? l10n.settingsUpdateAvailable(result.latestVersion) : l10n.settingsUpToDate;
   }
 
   @override
@@ -49,6 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         listenable: PrefsService.instance,
         builder: (context, _) {
           final prefs = PrefsService.instance;
+          final updateStatusText = _statusText(l10n);
           return SafeArea(
             child: ListView(
             children: [
@@ -100,17 +116,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(),
               ListTile(
                 title: Text(l10n.settingsCheckUpdate),
-                subtitle: _checking
-                    ? Text(l10n.settingsCheckingUpdate)
-                    : (_statusMessage != null ? Text(_statusMessage!) : null),
+                subtitle: updateStatusText == null ? null : Text(updateStatusText),
                 trailing: _checking
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.refresh),
-                onTap: _checking ? null : _checkForUpdates,
+                    : Icon(_result?.hasUpdate == true ? Icons.open_in_new : Icons.refresh),
+                onTap: _checking
+                    ? null
+                    : (_result?.hasUpdate == true ? _openLatestRelease : _checkForUpdates),
               ),
             ],
             ),

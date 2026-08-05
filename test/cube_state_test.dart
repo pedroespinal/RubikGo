@@ -70,7 +70,24 @@ void main() {
       final b = state.stickerAt(CubeFace.front, 0)!;
       state.setSticker(CubeFace.up, 0, b);
       state.setSticker(CubeFace.front, 0, a);
-      expect(state.validate(), CubeValidationError.unsolvableState);
+      // Either specific diagnosis is acceptable here — what matters is that
+      // this is caught as unsolvable at all, not which piece cuber blames.
+      expect(
+        state.validate(),
+        anyOf(CubeValidationError.twistedPiece, CubeValidationError.probableSwap),
+      );
+    });
+
+    test('a single flipped edge (colors swapped within one piece) is reported as twisted', () {
+      final state = _stateFromCube(cuber.Cube.solved);
+      // U6/R2 are the two facelets of the same up-right edge piece — swap
+      // just those two with each other, which flips that one edge in place
+      // without touching any other piece.
+      final a = state.stickerAt(CubeFace.up, 5)!;
+      final b = state.stickerAt(CubeFace.right, 1)!;
+      state.setSticker(CubeFace.up, 5, b);
+      state.setSticker(CubeFace.right, 1, a);
+      expect(state.validate(), CubeValidationError.twistedPiece);
     });
   });
 }

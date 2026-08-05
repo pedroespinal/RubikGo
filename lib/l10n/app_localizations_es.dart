@@ -138,6 +138,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get validationTitle => 'Estado del cubo inválido';
 
   @override
+  String get validationIncomplete =>
+      'Faltan stickers por pintar. Completa las 6 caras antes de continuar.';
+
+  @override
   String validationColorCount(String colors) {
     return 'Cada color debe aparecer exactamente 9 veces. Revisa: $colors.';
   }
@@ -149,6 +153,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get validationUnsolvable =>
       'Esta combinación de colores no corresponde a un cubo físico real. Revisa que cada sticker coincida con tu cubo y vuelve a intentar.';
+
+  @override
+  String get validationTwistedPiece =>
+      'Una pieza en un borde o esquina parece estar rotada respecto a como se ve en tu cubo real (sus colores no están en el orden correcto). Revisa los stickers donde se juntan dos o tres caras.';
+
+  @override
+  String get validationProbableSwap =>
+      'Es probable que dos stickers estén intercambiados entre dos posiciones distintas — es común confundir colores parecidos como blanco/amarillo o rojo/naranja. Revisa cada sticker comparándolo con tu cubo real, sobre todo cerca de los bordes entre caras.';
 
   @override
   String get validationOk => 'Entendido';

@@ -12,6 +12,13 @@ extension CubeFaceX on CubeFace {
 }
 
 /// Reasons a [CubeState] cannot be sent to the solver yet.
+///
+/// The last two both mean "color counts are correct but this specific
+/// arrangement can't be a real cube" — kept distinct from one generic
+/// "invalid" bucket because they point at different kinds of mistakes,
+/// which is the most actionable hint the app can give: it has no way to
+/// know exactly *which* sticker is wrong, only what shape of mistake
+/// tends to produce this kind of failure.
 enum CubeValidationError {
   /// Not all 54 stickers have been assigned a color yet.
   incomplete,
@@ -22,10 +29,15 @@ enum CubeValidationError {
   /// Two or more center stickers share the same color.
   duplicateCenters,
 
-  /// The color assignment does not correspond to any physically
-  /// assemblable cube (e.g. a color-corrected photo scan with a swapped
-  /// sticker, or a manual entry mistake).
-  unsolvableState,
+  /// A real edge or corner piece, but flipped/rotated in place — typically
+  /// means two stickers *of the same piece* (the two or three squares
+  /// meeting at one edge/corner) were read in the wrong order.
+  twistedPiece,
+
+  /// Every other unsolvable case — typically two stickers were swapped
+  /// between two different pieces (most often a misread between two
+  /// similar colors, e.g. white/yellow or red/orange).
+  probableSwap,
 }
 
 /// Mutable in-progress (or completed) color state of a physical cube, as
@@ -93,8 +105,32 @@ class CubeState {
     if (!isComplete) return CubeValidationError.incomplete;
     if (colorsWithWrongCount().isNotEmpty) return CubeValidationError.wrongColorCounts;
     if (hasDuplicateCenters) return CubeValidationError.duplicateCenters;
-    if (toCube() == null) return CubeValidationError.unsolvableState;
-    return null;
+
+    final status = _rawStatus();
+    if (status == null || status == cuber.CubeStatus.ok) return null;
+
+    switch (status) {
+      case cuber.CubeStatus.twistedEdge:
+      case cuber.CubeStatus.twistedCorner:
+        return CubeValidationError.twistedPiece;
+      case cuber.CubeStatus.missingEdge:
+      case cuber.CubeStatus.missingCorner:
+      case cuber.CubeStatus.parityError:
+      case cuber.CubeStatus.ok:
+        return CubeValidationError.probableSwap;
+    }
+  }
+
+  /// The raw cuber diagnosis for the current stickers, or `null` if the
+  /// definition can't even be parsed (e.g. centers not yet resolvable).
+  cuber.CubeStatus? _rawStatus() {
+    final definition = _toFaceletDefinition();
+    if (definition == null) return null;
+    try {
+      return cuber.Cube.from(definition).verify();
+    } on ArgumentError {
+      return null;
+    }
   }
 
   /// Builds the cuber facelet definition string (U9 R9 F9 D9 L9 B9), using

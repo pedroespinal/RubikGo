@@ -57,14 +57,13 @@ class _CubeColorEditorState extends State<CubeColorEditor> {
     }
 
     final message = switch (error) {
-      CubeValidationError.incomplete => l10n.validationColorCount(
-          CubeColor.values.map((c) => c.label(l10n)).join(', '),
-        ),
+      CubeValidationError.incomplete => l10n.validationIncomplete,
       CubeValidationError.wrongColorCounts => l10n.validationColorCount(
           _state.colorsWithWrongCount().map((c) => c.label(l10n)).join(', '),
         ),
       CubeValidationError.duplicateCenters => l10n.validationDuplicateCenters,
-      CubeValidationError.unsolvableState => l10n.validationUnsolvable,
+      CubeValidationError.twistedPiece => l10n.validationTwistedPiece,
+      CubeValidationError.probableSwap => l10n.validationProbableSwap,
     };
 
     showDialog<void>(

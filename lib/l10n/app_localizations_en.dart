@@ -137,6 +137,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationTitle => 'Invalid cube state';
 
   @override
+  String get validationIncomplete =>
+      'Some stickers haven\'t been painted yet. Complete all 6 faces before continuing.';
+
+  @override
   String validationColorCount(String colors) {
     return 'Each color must appear exactly 9 times. Check: $colors.';
   }
@@ -148,6 +152,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get validationUnsolvable =>
       'This color combination doesn\'t match a real physical cube. Check that every sticker matches your cube and try again.';
+
+  @override
+  String get validationTwistedPiece =>
+      'A piece on an edge or corner looks rotated compared to your real cube (its colors are in the wrong order). Check the stickers where two or three faces meet.';
+
+  @override
+  String get validationProbableSwap =>
+      'Two stickers are likely swapped between two different spots — it\'s common to mix up similar colors like white/yellow or red/orange. Check each sticker against your real cube, especially near the borders between faces.';
 
   @override
   String get validationOk => 'OK';

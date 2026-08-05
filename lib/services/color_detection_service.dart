@@ -15,22 +15,17 @@ const double kCubeGuideSquareFraction = 0.72;
 /// Best-effort classification of the 9 stickers of one cube face photo into
 /// the 6 standard cube colors.
 ///
-/// Lighting varies a lot between phones and rooms, so this is intentionally
-/// simple (average color per cell + nearest reference color) rather than a
-/// full calibration pipeline — the app always routes the result through a
-/// mandatory manual correction screen, which is what actually makes the
-/// scan flow reliable.
+/// Classification is hue-based (HSV), not a raw RGB distance to fixed
+/// reference colors: real photos vary a lot in brightness (shadows, camera
+/// auto-exposure, warm/cool white balance), and brightness swings are
+/// exactly what make RGB-distance matching misfire — a shadowed red sticker
+/// can end up numerically closer to a "green" reference than to "red" once
+/// everything gets darker. Hue stays comparatively stable under those
+/// changes, which is why real-world cube scanners classify this way.
+/// Lighting is still never perfectly controlled, so the app always routes
+/// the result through a mandatory manual correction screen.
 class ColorDetectionService {
   const ColorDetectionService();
-
-  static const _referenceColors = {
-    CubeColor.white: (r: 255, g: 255, b: 255),
-    CubeColor.yellow: (r: 255, g: 213, b: 0),
-    CubeColor.red: (r: 196, g: 30, b: 58),
-    CubeColor.orange: (r: 255, g: 127, b: 0),
-    CubeColor.blue: (r: 0, g: 81, b: 186),
-    CubeColor.green: (r: 0, g: 158, b: 96),
-  };
 
   /// Returns the 9 detected colors (row-major, matching [CubeState]'s
   /// sticker order) for a photo of a single face aligned to the on-screen
@@ -82,29 +77,45 @@ class ColorDetectionService {
   }
 
   CubeColor _classify(({int r, int g, int b}) sample) {
-    var best = CubeColor.white;
-    var bestDistance = double.infinity;
-    for (final entry in _referenceColors.entries) {
-      final distance = _redmeanDistance(sample, entry.value);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        best = entry.key;
-      }
+    final hsv = _rgbToHsv(sample.r, sample.g, sample.b);
+
+    // Low saturation means "not really a color" — white, regardless of hue,
+    // as long as it isn't too dark to be a lit sticker.
+    if (hsv.s < 0.28 && hsv.v > 0.5) {
+      return CubeColor.white;
     }
-    return best;
+
+    final h = hsv.h;
+    if (h >= 335 || h < 14) return CubeColor.red;
+    if (h < 40) return CubeColor.orange;
+    if (h < 70) return CubeColor.yellow;
+    if (h < 170) return CubeColor.green;
+    return CubeColor.blue;
   }
 
-  /// "Redmean" weighted RGB distance: a cheap approximation of perceptual
-  /// color difference that works noticeably better than plain Euclidean
-  /// distance without needing a full Lab color-space conversion.
-  double _redmeanDistance(({int r, int g, int b}) a, ({int r, int g, int b}) b) {
-    final rMean = (a.r + b.r) / 2.0;
-    final dr = (a.r - b.r).toDouble();
-    final dg = (a.g - b.g).toDouble();
-    final db = (a.b - b.b).toDouble();
-    final weightR = 2 + rMean / 256;
-    final weightG = 4.0;
-    final weightB = 2 + (255 - rMean) / 256;
-    return sqrt(weightR * dr * dr + weightG * dg * dg + weightB * db * db);
+  /// Converts 8-bit RGB to HSV, with hue in degrees [0, 360), and
+  /// saturation/value in [0, 1].
+  ({double h, double s, double v}) _rgbToHsv(int r, int g, int b) {
+    final rf = r / 255.0, gf = g / 255.0, bf = b / 255.0;
+    final maxc = max(rf, max(gf, bf));
+    final minc = min(rf, min(gf, bf));
+    final delta = maxc - minc;
+
+    final v = maxc;
+    final s = maxc == 0 ? 0.0 : delta / maxc;
+
+    double h;
+    if (delta == 0) {
+      h = 0;
+    } else if (maxc == rf) {
+      h = 60 * (((gf - bf) / delta) % 6);
+    } else if (maxc == gf) {
+      h = 60 * (((bf - rf) / delta) + 2);
+    } else {
+      h = 60 * (((rf - gf) / delta) + 4);
+    }
+    if (h < 0) h += 360;
+
+    return (h: h, s: s, v: v);
   }
 }

@@ -38,4 +38,33 @@ void main() {
     final result = service.detectFace(bytes);
     expect(result.every((c) => c == CubeColor.white), isTrue);
   });
+
+  group('robust under real-world lighting (shadows, warm/cool white balance)', () {
+    // Hue-based classification is what makes these pass: the same color
+    // photographed in a shadow gets uniformly darker (lower value) but
+    // keeps roughly the same hue, whereas a plain RGB-distance classifier
+    // (the previous implementation) systematically misread darkened
+    // stickers as an entirely different color.
+    for (final entry in cases.entries) {
+      if (entry.key == CubeColor.white) continue;
+      test('a shadowed (60% brightness) ${entry.key.name} sticker is still ${entry.key.name}', () {
+        final (r, g, b) = entry.value;
+        final bytes = _solidPng((r * 0.6).round(), (g * 0.6).round(), (b * 0.6).round());
+        final result = service.detectFace(bytes);
+        expect(result.every((c) => c == entry.key), isTrue);
+      });
+    }
+
+    test('a warm-white-balance white sticker (255, 235, 200) still reads as white', () {
+      final bytes = _solidPng(255, 235, 200);
+      final result = service.detectFace(bytes);
+      expect(result.every((c) => c == CubeColor.white), isTrue);
+    });
+
+    test('a cool-white-balance white sticker (225, 235, 255) still reads as white', () {
+      final bytes = _solidPng(225, 235, 255);
+      final result = service.detectFace(bytes);
+      expect(result.every((c) => c == CubeColor.white), isTrue);
+    });
+  });
 }

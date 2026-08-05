@@ -33,8 +33,16 @@ try {
 
     Write-Output "==> Publishing $tag"
 
-    $existing = gh release view $tag --repo pedroespinal/RubikGo 2>$null
-    if ($LASTEXITCODE -eq 0) {
+    # gh writes to stderr when the release doesn't exist (the expected case
+    # here), which under $ErrorActionPreference = "Stop" would otherwise be
+    # promoted into a terminating error — so relax it just for this check.
+    $previousErrorPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    gh release view $tag --repo pedroespinal/RubikGo 2>$null | Out-Null
+    $releaseAlreadyExists = ($LASTEXITCODE -eq 0)
+    $ErrorActionPreference = $previousErrorPreference
+
+    if ($releaseAlreadyExists) {
         throw "GitHub release $tag already exists. Bump the version (scripts/build_release.ps1) before publishing again."
     }
 

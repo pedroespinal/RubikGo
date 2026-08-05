@@ -1,4 +1,4 @@
-name: rubik_go
+﻿name: rubik_go
 description: "RubikGo: scan a Rubik's Cube by photo or manual color entry and get the fastest step-by-step solution (Kociemba two-phase algorithm)."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.9.2
@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   camera: ^0.12.0+1
   image: ^4.8.0
-  permission_handler: ^13.0.0
+  permission_handler: 11.3.0
   shared_preferences: ^2.5.5
   package_info_plus: ^9.0.1
   http: ^1.6.0

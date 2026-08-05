@@ -30,9 +30,15 @@ class CubeNetView extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Each sticker draws a 1px margin on every side (see _FaceGrid), so
+        // its actual footprint is `size + 2`, not just `size` — leaving that
+        // out here made the 12-sticker-wide net overflow past the screen
+        // edge on phones.
+        const marginPerSticker = 2.0;
         final size = constraints.maxWidth.isFinite
-            ? (constraints.maxWidth / 12).clamp(12.0, maxStickerSize)
+            ? ((constraints.maxWidth / 12) - marginPerSticker).clamp(10.0, maxStickerSize)
             : maxStickerSize;
+        final faceFootprint = (size + marginPerSticker) * 3;
 
         Widget faceGrid(CubeFace face) => _FaceGrid(
               face: face,
@@ -41,7 +47,7 @@ class CubeNetView extends StatelessWidget {
               onTap: onTapSticker,
               showLetters: showAccessibilityLetters,
             );
-        Widget blank() => SizedBox(width: size * 3, height: size * 3);
+        Widget blank() => SizedBox(width: faceFootprint, height: faceFootprint);
 
         return Column(
           mainAxisSize: MainAxisSize.min,

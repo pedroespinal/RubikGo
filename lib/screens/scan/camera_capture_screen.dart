@@ -32,6 +32,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   _SetupState _setup = _SetupState.loading;
   int _faceIndex = 0;
   bool _capturing = false;
+  bool _flashOn = false;
   Uint8List? _reviewPhotoBytes;
   late CubeState _state;
   final List<Uint8List?> _thumbnails = List<Uint8List?>.filled(6, null);
@@ -72,6 +73,18 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   void dispose() {
     _controller?.dispose();
     super.dispose();
+  }
+
+  Future<void> _toggleFlash() async {
+    final controller = _controller;
+    if (controller == null) return;
+    final turnOn = !_flashOn;
+    try {
+      await controller.setFlashMode(turnOn ? FlashMode.torch : FlashMode.off);
+      if (mounted) setState(() => _flashOn = turnOn);
+    } catch (_) {
+      // Some devices/emulators have no flash — leave the toggle as-is.
+    }
   }
 
   Future<void> _capture() async {
@@ -130,7 +143,17 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     final reviewing = _reviewPhotoBytes != null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.cameraFaceProgress(_faceIndex + 1))),
+      appBar: AppBar(
+        title: Text(l10n.cameraFaceProgress(_faceIndex + 1)),
+        actions: [
+          if (_setup == _SetupState.ready && !reviewing)
+            IconButton(
+              icon: Icon(_flashOn ? Icons.flash_on : Icons.flash_off),
+              tooltip: l10n.cameraToggleFlash,
+              onPressed: _toggleFlash,
+            ),
+        ],
+      ),
       body: SafeArea(
         child: switch (_setup) {
         _SetupState.loading => const Center(child: CircularProgressIndicator()),

@@ -242,6 +242,12 @@ abstract class AppLocalizations {
   /// **'It doesn\'t matter which face is which or what order you photograph them in — just turn the cube and show the camera any face you haven\'t photographed yet.'**
   String get cameraAnyOrderHint;
 
+  /// No description provided for @cameraToggleFlash.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the flash on/off to improve color detection'**
+  String get cameraToggleFlash;
+
   /// No description provided for @cameraCapture.
   ///
   /// In en, this message translates to:
@@ -397,6 +403,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your cube is already solved.'**
   String get solutionAlreadySolved;
+
+  /// No description provided for @solutionTurnClockwise.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the {color} face 90° clockwise (facing it directly)'**
+  String solutionTurnClockwise(String color);
+
+  /// No description provided for @solutionTurnCounterClockwise.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the {color} face 90° counter-clockwise (facing it directly)'**
+  String solutionTurnCounterClockwise(String color);
+
+  /// No description provided for @solutionTurnDouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the {color} face 180° (either direction)'**
+  String solutionTurnDouble(String color);
 
   /// No description provided for @practiceTitle.
   ///

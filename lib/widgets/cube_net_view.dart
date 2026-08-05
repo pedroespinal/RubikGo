@@ -18,12 +18,20 @@ class CubeNetView extends StatelessWidget {
   final bool showAccessibilityLetters;
   final double maxStickerSize;
 
+  /// When set, draws a highlighted outline around this whole face — used by
+  /// the solution screen to point at exactly which face the next move
+  /// turns, since face names like "Down" mean nothing on their own (the
+  /// user identifies faces by their center color, not by a fixed spatial
+  /// orientation).
+  final CubeFace? highlightFace;
+
   const CubeNetView({
     super.key,
     required this.colorAt,
     this.onTapSticker,
     this.showAccessibilityLetters = false,
     this.maxStickerSize = 34,
+    this.highlightFace,
   });
 
   @override
@@ -46,6 +54,7 @@ class CubeNetView extends StatelessWidget {
               colorAt: colorAt,
               onTap: onTapSticker,
               showLetters: showAccessibilityLetters,
+              highlighted: face == highlightFace,
             );
         Widget blank() => SizedBox(width: faceFootprint, height: faceFootprint);
 
@@ -82,6 +91,7 @@ class _FaceGrid extends StatelessWidget {
   final CubeColor? Function(CubeFace, int) colorAt;
   final void Function(CubeFace, int)? onTap;
   final bool showLetters;
+  final bool highlighted;
 
   const _FaceGrid({
     required this.face,
@@ -89,6 +99,7 @@ class _FaceGrid extends StatelessWidget {
     required this.colorAt,
     required this.onTap,
     required this.showLetters,
+    this.highlighted = false,
   });
 
   @override
@@ -97,7 +108,7 @@ class _FaceGrid extends StatelessWidget {
         ? AppColors.stickerBorderDark
         : AppColors.stickerBorderLight;
 
-    return Column(
+    final grid = Column(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (row) {
         return Row(
@@ -132,6 +143,23 @@ class _FaceGrid extends StatelessWidget {
           }),
         );
       }),
+    );
+
+    if (!highlighted) return grid;
+
+    // `decoration` (as opposed to `foregroundDecoration`) makes Container
+    // auto-pad by the border width to keep the child fully visible inside
+    // it — which silently grew this face past its allotted slot in the
+    // net's Row/Column layout and overflowed the screen (found by actually
+    // running this on an emulator, twice: once with explicit padding, and
+    // again here since `decoration` pads on its own even without it).
+    // `foregroundDecoration` paints on top instead, with no effect on size.
+    return Container(
+      foregroundDecoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 3),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: grid,
     );
   }
 }

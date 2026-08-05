@@ -86,6 +86,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No importa qué cara es cuál ni en qué orden las fotografíes: solo gira el cubo y muéstrale a la cámara una cara que no hayas fotografiado todavía.';
 
   @override
+  String get cameraToggleFlash =>
+      'Encender/apagar el flash para mejorar la detección de color';
+
+  @override
   String get cameraCapture => 'Capturar';
 
   @override
@@ -176,6 +180,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get solutionAlreadySolved => 'Tu cubo ya está resuelto.';
+
+  @override
+  String solutionTurnClockwise(String color) {
+    return 'Gira la cara $color 90° en sentido horario (mirándola de frente)';
+  }
+
+  @override
+  String solutionTurnCounterClockwise(String color) {
+    return 'Gira la cara $color 90° en sentido antihorario (mirándola de frente)';
+  }
+
+  @override
+  String solutionTurnDouble(String color) {
+    return 'Gira la cara $color 180° (cualquier dirección)';
+  }
 
   @override
   String get practiceTitle => 'Modo práctica';

@@ -43,6 +43,18 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
     return _letterToPhysical[letter];
   }
 
+  /// Faces are identified by their center color (what the user can
+  /// actually see on their physical cube), never by the abstract
+  /// up/down/left/right/front/back names — those don't correspond to any
+  /// required orientation in this app.
+  String _moveDescription(cuber.Move move, AppLocalizations l10n) {
+    final colorName = _letterToPhysical[move.color]!.label(l10n);
+    if (move.double) return l10n.solutionTurnDouble(colorName);
+    return move.inverted
+        ? l10n.solutionTurnCounterClockwise(colorName)
+        : l10n.solutionTurnClockwise(colorName);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -78,6 +90,8 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
           final total = result.moveCount;
           final displayCube = result.stateAfter(_step);
           final solved = _step == total;
+          final nextMove = solved ? null : result.moves[_step];
+          final highlightFace = nextMove == null ? null : CubeFace.values[nextMove.color.index];
 
           return Column(
             children: [
@@ -97,6 +111,7 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
                 child: Center(
                   child: CubeNetView(
                     colorAt: (face, index) => _colorAt(displayCube, face, index),
+                    highlightFace: highlightFace,
                   ),
                 ),
               ),
@@ -111,7 +126,13 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
               else
                 Padding(
                   padding: const EdgeInsets.all(12),
-                  child: _MoveBadge(move: result.moves[_step].toString()),
+                  child: _MoveBadge(
+                    move: nextMove.toString(),
+                    description: _moveDescription(nextMove!, l10n),
+                    color: _letterToPhysical[nextMove.color]!,
+                    inverted: nextMove.inverted,
+                    double: nextMove.double,
+                  ),
                 ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
@@ -146,24 +167,63 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
 
 class _MoveBadge extends StatelessWidget {
   final String move;
+  final String description;
+  final CubeColor color;
+  final bool inverted;
+  final bool double;
 
-  const _MoveBadge({required this.move});
+  const _MoveBadge({
+    required this.move,
+    required this.description,
+    required this.color,
+    required this.inverted,
+    required this.double,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final rotationIcon = double
+        ? Icons.sync_alt
+        : (inverted ? Icons.rotate_left : Icons.rotate_right);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(
-        move,
-        style: TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: color.swatch,
+                  border: Border.all(color: onPrimary, width: 1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Icon(rotationIcon, color: onPrimary, size: 28),
+              const SizedBox(width: 8),
+              Text(
+                move,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: onPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: onPrimary),
+          ),
+        ],
       ),
     );
   }

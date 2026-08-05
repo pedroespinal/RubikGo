@@ -85,6 +85,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'It doesn\'t matter which face is which or what order you photograph them in — just turn the cube and show the camera any face you haven\'t photographed yet.';
 
   @override
+  String get cameraToggleFlash =>
+      'Turn the flash on/off to improve color detection';
+
+  @override
   String get cameraCapture => 'Capture';
 
   @override
@@ -175,6 +179,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get solutionAlreadySolved => 'Your cube is already solved.';
+
+  @override
+  String solutionTurnClockwise(String color) {
+    return 'Turn the $color face 90° clockwise (facing it directly)';
+  }
+
+  @override
+  String solutionTurnCounterClockwise(String color) {
+    return 'Turn the $color face 90° counter-clockwise (facing it directly)';
+  }
+
+  @override
+  String solutionTurnDouble(String color) {
+    return 'Turn the $color face 180° (either direction)';
+  }
 
   @override
   String get practiceTitle => 'Practice mode';

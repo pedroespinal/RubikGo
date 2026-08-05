@@ -28,11 +28,30 @@ powershell -File scripts/build_release.ps1
 
 Este script corre `flutter analyze` y `flutter test` como condición
 obligatoria antes de incrementar la versión y compilar el APK — nunca se
-publica una versión con errores o tests fallando.
+publica una versión con errores o tests fallando. El APK resultante
+**siempre** se copia con la versión en el nombre del archivo:
+`build/app/outputs/flutter-apk/RubikGo-v<version>-b<build>.apk`.
 
 This script runs `flutter analyze` and `flutter test` as a mandatory gate
 before bumping the version and building the APK — a version is never
-published with failing checks.
+published with failing checks. The resulting APK is **always** copied to a
+versioned filename: `build/app/outputs/flutter-apk/RubikGo-v<version>-b<build>.apk`.
+
+## Publicar en GitHub / Publishing to GitHub
+
+```bash
+powershell -File scripts/publish_release.ps1
+```
+
+Después de un build exitoso, este script hace commit de los cambios
+pendientes, hace push, y crea la GitHub Release con el APK versionado
+adjunto. Es una acción pública y visible — solo debe correrse cuando
+realmente se quiere publicar esa versión.
+
+After a successful build, this script commits any pending changes, pushes,
+and creates the GitHub Release with the versioned APK attached. This is a
+public, visible action — only run it when you actually intend to publish
+that version.
 
 ---
 

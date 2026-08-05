@@ -68,7 +68,18 @@ try {
         throw
     }
 
-    Write-Output "==> Done. APK at build\app\outputs\flutter-apk\app-release.apk (version $newVersion)"
+    # The APK Flutter produces is always named the generic "app-release.apk".
+    # The output file must always carry its version in the name (no
+    # exceptions), so it's copied to a versioned filename right here, every
+    # single time a release is built — not only when publishing.
+    $versionParts = $newVersion.Split('+')
+    $versionedName = "RubikGo-v$($versionParts[0])-b$($versionParts[1]).apk"
+    $outputDir = Join-Path $repoRoot "build\app\outputs\flutter-apk"
+    $genericApkPath = Join-Path $outputDir "app-release.apk"
+    $versionedApkPath = Join-Path $outputDir $versionedName
+    Copy-Item -Path $genericApkPath -Destination $versionedApkPath -Force
+
+    Write-Output "==> Done. APK at build\app\outputs\flutter-apk\$versionedName (version $newVersion)"
 }
 finally {
     Pop-Location

@@ -124,32 +124,15 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     setState(() => _faceIndex = index);
   }
 
-  String _faceLabel(CubeFace face, AppLocalizations l10n) {
-    switch (face) {
-      case CubeFace.up:
-        return l10n.faceUp;
-      case CubeFace.right:
-        return l10n.faceRight;
-      case CubeFace.front:
-        return l10n.faceFront;
-      case CubeFace.down:
-        return l10n.faceDown;
-      case CubeFace.left:
-        return l10n.faceLeft;
-      case CubeFace.back:
-        return l10n.faceBack;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final face = CubeFace.values[_faceIndex];
     final reviewing = _reviewPhotoBytes != null;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.cameraFaceProgress(_faceIndex + 1))),
-      body: switch (_setup) {
+      body: SafeArea(
+        child: switch (_setup) {
         _SetupState.loading => const Center(child: CircularProgressIndicator()),
         _SetupState.permissionDenied || _SetupState.noCamera => Center(
             child: Padding(
@@ -162,8 +145,9 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Text(
-                  l10n.cameraTitle(_faceLabel(face, l10n)),
-                  style: Theme.of(context).textTheme.titleMedium,
+                  l10n.cameraAnyOrderHint,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
               Expanded(
@@ -256,7 +240,8 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
               ),
             ],
           ),
-      },
+        },
+      ),
     );
   }
 }

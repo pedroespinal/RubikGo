@@ -20,22 +20,24 @@ class GuideScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.guideTitle)),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: sections.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final (title, body) = sections[index];
-          return ExpansionTile(
-            title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-            initiallyExpanded: index == 0,
-            childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            expandedCrossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(body, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          );
-        },
+      body: SafeArea(
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: sections.length,
+          separatorBuilder: (context, index) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final (title, body) = sections[index];
+            return ExpansionTile(
+              title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+              initiallyExpanded: index == 0,
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(body, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

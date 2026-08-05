@@ -49,7 +49,8 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.solutionTitle)),
-      body: FutureBuilder<SolveResult?>(
+      body: SafeArea(
+        child: FutureBuilder<SolveResult?>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
@@ -137,6 +138,7 @@ class _SolutionStepsScreenState extends State<SolutionStepsScreen> {
             ],
           );
         },
+        ),
       ),
     );
   }

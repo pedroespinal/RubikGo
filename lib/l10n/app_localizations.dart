@@ -236,6 +236,12 @@ abstract class AppLocalizations {
   /// **'Align the cube face inside the grid and take the photo. Repeat for all 6 faces.'**
   String get cameraInstructions;
 
+  /// No description provided for @cameraAnyOrderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It doesn\'t matter which face is which or what order you photograph them in — just turn the cube and show the camera any face you haven\'t photographed yet.'**
+  String get cameraAnyOrderHint;
+
   /// No description provided for @cameraCapture.
   ///
   /// In en, this message translates to:
@@ -599,7 +605,7 @@ abstract class AppLocalizations {
   /// No description provided for @guideScanBody.
   ///
   /// In en, this message translates to:
-  /// **'1. Tap \"Scan with camera\" on the home screen.\n2. Hold the cube in good light and align each face inside the guide grid.\n3. Take one photo per face, following the order shown.\n4. Review the detected colors on the correction screen and fix any misidentified sticker before continuing.'**
+  /// **'1. Tap \"Scan with camera\" on the home screen.\n2. Hold the cube in good light and align whichever face is facing you inside the guide grid.\n3. Take the photo, check that it lines up well, and confirm with \"Use photo\". It doesn\'t matter which face is which or what order you show them in — just turn the cube to any side you haven\'t photographed yet and repeat until all 6 are done. The thumbnail strip at the bottom shows your progress and lets you tap any of them to retake it.\n4. On the correction screen, review the detected colors and fix any misidentified sticker before continuing.'**
   String get guideScanBody;
 
   /// No description provided for @guideManualTitle.

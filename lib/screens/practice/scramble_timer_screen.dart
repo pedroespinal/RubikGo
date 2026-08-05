@@ -117,7 +117,8 @@ class _ScrambleTimerScreenState extends State<ScrambleTimerScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.practiceTitle)),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
@@ -159,6 +160,7 @@ class _ScrambleTimerScreenState extends State<ScrambleTimerScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -82,6 +82,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Alinea la cara del cubo dentro de la cuadrícula y toma la foto. Repite para las 6 caras.';
 
   @override
+  String get cameraAnyOrderHint =>
+      'No importa qué cara es cuál ni en qué orden las fotografíes: solo gira el cubo y muéstrale a la cámara una cara que no hayas fotografiado todavía.';
+
+  @override
   String get cameraCapture => 'Capturar';
 
   @override
@@ -291,7 +295,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get guideScanBody =>
-      '1. Toca \"Escanear con cámara\" en la pantalla principal.\n2. Sostén el cubo con buena luz y alinea cada cara dentro de la cuadrícula guía.\n3. Toma una foto por cada una de las 6 caras, siguiendo el orden indicado.\n4. Revisa los colores detectados en la pantalla de corrección y ajusta cualquier sticker mal identificado antes de continuar.';
+      '1. Toca \"Escanear con cámara\" en la pantalla principal.\n2. Sostén el cubo con buena luz y alinea la cara que te quede de frente dentro de la cuadrícula guía.\n3. Toma la foto, revisa que se vea bien alineada y confirma con \"Usar foto\". No importa qué cara es cuál ni en qué orden las muestres: solo gira el cubo hacia cualquier lado que no hayas fotografiado y repite hasta completar las 6. La franja de miniaturas de abajo te muestra tu progreso y te deja tocar cualquiera para repetirla.\n4. En la pantalla de corrección, revisa los colores detectados y ajusta cualquier sticker mal identificado antes de continuar.';
 
   @override
   String get guideManualTitle => 'Cómo elegir los colores manualmente';

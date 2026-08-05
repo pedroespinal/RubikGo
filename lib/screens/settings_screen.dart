@@ -49,7 +49,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         listenable: PrefsService.instance,
         builder: (context, _) {
           final prefs = PrefsService.instance;
-          return ListView(
+          return SafeArea(
+            child: ListView(
             children: [
               _SectionHeader(l10n.settingsLanguage),
               RadioGroup<Locale>(
@@ -112,6 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: _checking ? null : _checkForUpdates,
               ),
             ],
+            ),
           );
         },
       ),

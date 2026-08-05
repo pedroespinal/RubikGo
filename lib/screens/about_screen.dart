@@ -21,7 +21,8 @@ class AboutScreen extends StatelessWidget {
         builder: (context, snapshot) {
           final version = snapshot.data?.version ?? '…';
 
-          return ListView(
+          return SafeArea(
+            child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
               Center(
@@ -65,6 +66,7 @@ class AboutScreen extends StatelessWidget {
               const SizedBox(height: 32),
               const AppFooter(),
             ],
+            ),
           );
         },
       ),

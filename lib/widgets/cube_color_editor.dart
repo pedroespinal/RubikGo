@@ -87,8 +87,9 @@ class _CubeColorEditorState extends State<CubeColorEditor> {
     final l10n = AppLocalizations.of(context)!;
     final counts = _state.colorCounts();
 
-    return Column(
-      children: [
+    return SafeArea(
+      child: Column(
+        children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Text(widget.instructions, style: Theme.of(context).textTheme.bodyMedium),
@@ -162,7 +163,8 @@ class _CubeColorEditorState extends State<CubeColorEditor> {
             ],
           ),
         ),
-      ],
+        ],
+      ),
     );
   }
 }

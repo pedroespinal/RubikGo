@@ -87,6 +87,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cameraRetake => 'Retake photo';
 
   @override
+  String get cameraUsePhoto => 'Use photo';
+
+  @override
+  String get cameraReviewInstructions =>
+      'Check that all 9 colors line up well inside the box before continuing.';
+
+  @override
   String get cameraPermissionDenied =>
       'Camera permission is required to scan the cube.';
 

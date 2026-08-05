@@ -5,6 +5,13 @@ import 'package:image/image.dart' as img;
 
 import '../models/cube_color.dart';
 
+/// Fraction of the shortest side used for the on-screen alignment square in
+/// the camera capture screen. [ColorDetectionService.detectFace] crops to
+/// this exact same fraction before sampling, so whatever the user sees
+/// inside the guide box on screen is exactly what gets analyzed — the two
+/// must always use this one shared constant, never separate numbers.
+const double kCubeGuideSquareFraction = 0.72;
+
 /// Best-effort classification of the 9 stickers of one cube face photo into
 /// the 6 standard cube colors.
 ///
@@ -26,18 +33,29 @@ class ColorDetectionService {
   };
 
   /// Returns the 9 detected colors (row-major, matching [CubeState]'s
-  /// sticker order) for a photo of a single face aligned to a 3x3 guide
-  /// grid that fills the frame.
-  List<CubeColor> detectFace(Uint8List imageBytes) {
+  /// sticker order) for a photo of a single face aligned to the on-screen
+  /// guide square. Only the center [kCubeGuideSquareFraction] of the photo
+  /// is analyzed — the same fraction the guide box shows on screen — so
+  /// background outside the cube never gets sampled as if it were a sticker.
+  List<CubeColor> detectFace(Uint8List imageBytes, {double guideSquareFraction = kCubeGuideSquareFraction}) {
     final decoded = img.decodeImage(imageBytes);
     if (decoded == null) {
       throw const FormatException('Could not decode the captured photo.');
     }
 
+    final cropped = _cropToCenterSquare(decoded, guideSquareFraction);
+
     return [
       for (var row = 0; row < 3; row++)
-        for (var col = 0; col < 3; col++) _classify(_averageCellColor(decoded, row, col)),
+        for (var col = 0; col < 3; col++) _classify(_averageCellColor(cropped, row, col)),
     ];
+  }
+
+  img.Image _cropToCenterSquare(img.Image image, double fraction) {
+    final side = (min(image.width, image.height) * fraction).round();
+    final x = ((image.width - side) / 2).round();
+    final y = ((image.height - side) / 2).round();
+    return img.copyCrop(image, x: x, y: y, width: side, height: side);
   }
 
   ({int r, int g, int b}) _averageCellColor(img.Image image, int row, int col) {

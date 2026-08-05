@@ -29,6 +29,8 @@
   "cameraInstructions": "Alinea la cara del cubo dentro de la cuadrícula y toma la foto. Repite para las 6 caras.",
   "cameraCapture": "Capturar",
   "cameraRetake": "Repetir foto",
+  "cameraUsePhoto": "Usar foto",
+  "cameraReviewInstructions": "Revisa que los 9 colores se vean bien alineados dentro del recuadro antes de continuar.",
   "cameraPermissionDenied": "Se necesita permiso de cámara para escanear el cubo.",
   "cameraFaceProgress": "Cara {current} de 6",
   "@cameraFaceProgress": {"placeholders": {"current": {"type": "int"}}},

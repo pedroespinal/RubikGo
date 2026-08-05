@@ -88,6 +88,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cameraRetake => 'Repetir foto';
 
   @override
+  String get cameraUsePhoto => 'Usar foto';
+
+  @override
+  String get cameraReviewInstructions =>
+      'Revisa que los 9 colores se vean bien alineados dentro del recuadro antes de continuar.';
+
+  @override
   String get cameraPermissionDenied =>
       'Se necesita permiso de cámara para escanear el cubo.';
 

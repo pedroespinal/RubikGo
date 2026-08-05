@@ -248,6 +248,18 @@ abstract class AppLocalizations {
   /// **'Retake photo'**
   String get cameraRetake;
 
+  /// No description provided for @cameraUsePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Use photo'**
+  String get cameraUsePhoto;
+
+  /// No description provided for @cameraReviewInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that all 9 colors line up well inside the box before continuing.'**
+  String get cameraReviewInstructions;
+
   /// No description provided for @cameraPermissionDenied.
   ///
   /// In en, this message translates to:

@@ -29,6 +29,8 @@
   "cameraInstructions": "Align the cube face inside the grid and take the photo. Repeat for all 6 faces.",
   "cameraCapture": "Capture",
   "cameraRetake": "Retake photo",
+  "cameraUsePhoto": "Use photo",
+  "cameraReviewInstructions": "Check that all 9 colors line up well inside the box before continuing.",
   "cameraPermissionDenied": "Camera permission is required to scan the cube.",
   "cameraFaceProgress": "Face {current} of 6",
   "@cameraFaceProgress": {"placeholders": {"current": {"type": "int"}}},

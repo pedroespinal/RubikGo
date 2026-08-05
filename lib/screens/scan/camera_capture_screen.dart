@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -8,9 +10,12 @@ import '../../services/color_detection_service.dart';
 import 'color_correction_screen.dart';
 
 /// Guides the user through photographing all 6 faces of the cube, one at a
-/// time, with a 3x3 alignment grid overlay. Automatic color detection runs
-/// on each photo; the result always continues to [ColorCorrectionScreen]
-/// so misreads can be fixed before solving.
+/// time, with a 3x3 alignment grid overlay. Every photo goes through a
+/// review step (retake or confirm) before moving on, and a thumbnail strip
+/// always shows progress across all 6 faces — so it's hard to get lost or
+/// rush past a misaligned shot. Automatic color detection then runs on the
+/// confirmed photo; the result always continues to [ColorCorrectionScreen]
+/// so misreads can still be fixed by hand.
 class CameraCaptureScreen extends StatefulWidget {
   const CameraCaptureScreen({super.key});
 
@@ -27,7 +32,9 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   _SetupState _setup = _SetupState.loading;
   int _faceIndex = 0;
   bool _capturing = false;
+  Uint8List? _reviewPhotoBytes;
   late CubeState _state;
+  final List<Uint8List?> _thumbnails = List<Uint8List?>.filled(6, null);
 
   @override
   void initState() {
@@ -75,30 +82,46 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     try {
       final file = await controller.takePicture();
       final bytes = await file.readAsBytes();
-      final colors = _detector.detectFace(bytes);
-      final face = CubeFace.values[_faceIndex];
-      for (var i = 0; i < 9; i++) {
-        _state.setSticker(face, i, colors[i]);
-      }
-
-      if (_faceIndex == CubeFace.values.length - 1) {
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => ColorCorrectionScreen(detectedState: _state)),
-        );
-      } else {
-        setState(() {
-          _faceIndex++;
-          _capturing = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _capturing = false;
+        _reviewPhotoBytes = bytes;
+      });
     } catch (_) {
       if (mounted) setState(() => _capturing = false);
     }
   }
 
-  void _retakePrevious() {
-    if (_faceIndex > 0) setState(() => _faceIndex--);
+  void _retakePhoto() {
+    setState(() => _reviewPhotoBytes = null);
+  }
+
+  void _confirmPhoto() {
+    final bytes = _reviewPhotoBytes;
+    if (bytes == null) return;
+
+    final colors = _detector.detectFace(bytes);
+    final face = CubeFace.values[_faceIndex];
+    for (var i = 0; i < 9; i++) {
+      _state.setSticker(face, i, colors[i]);
+    }
+    _thumbnails[_faceIndex] = bytes;
+
+    final isLastFace = _faceIndex == CubeFace.values.length - 1;
+    setState(() => _reviewPhotoBytes = null);
+
+    if (isLastFace) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => ColorCorrectionScreen(detectedState: _state)),
+      );
+    } else {
+      setState(() => _faceIndex++);
+    }
+  }
+
+  void _jumpToFace(int index) {
+    if (_reviewPhotoBytes != null) return;
+    setState(() => _faceIndex = index);
   }
 
   String _faceLabel(CubeFace face, AppLocalizations l10n) {
@@ -122,6 +145,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final face = CubeFace.values[_faceIndex];
+    final reviewing = _reviewPhotoBytes != null;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.cameraFaceProgress(_faceIndex + 1))),
@@ -143,34 +167,82 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
                 ),
               ),
               Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CameraPreview(_controller!),
-                    const IgnorePointer(child: CustomPaint(painter: _GuideGridPainter())),
-                  ],
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Some devices/emulators report `aspectRatio` already
+                    // oriented for portrait display, others report the raw
+                    // (often landscape) sensor ratio. Rather than guessing
+                    // which convention applies and risking an overflowing,
+                    // stretched box (which is exactly what made the guide
+                    // grid not line up with the physical cube), always
+                    // normalize to a portrait (<=1) ratio and then manually
+                    // fit it inside the available space — this can never
+                    // overflow, no matter what the camera reports.
+                    final rawRatio = _controller!.value.aspectRatio;
+                    final portraitRatio = rawRatio > 1 ? 1 / rawRatio : rawRatio;
+
+                    var boxWidth = constraints.maxWidth;
+                    var boxHeight = boxWidth / portraitRatio;
+                    if (boxHeight > constraints.maxHeight) {
+                      boxHeight = constraints.maxHeight;
+                      boxWidth = boxHeight * portraitRatio;
+                    }
+
+                    return Center(
+                      child: SizedBox(
+                        width: boxWidth,
+                        height: boxHeight,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (reviewing)
+                              Image.memory(_reviewPhotoBytes!, fit: BoxFit.cover)
+                            else
+                              CameraPreview(_controller!),
+                            const IgnorePointer(child: CustomPaint(painter: _GuideGridPainter())),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(l10n.cameraInstructions, textAlign: TextAlign.center),
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  reviewing ? l10n.cameraReviewInstructions : l10n.cameraInstructions,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              _FaceThumbnailStrip(
+                thumbnails: _thumbnails,
+                currentIndex: _faceIndex,
+                onTap: _jumpToFace,
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                child: Row(
-                  children: [
-                    if (_faceIndex > 0) ...[
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _capturing ? null : _retakePrevious,
-                          child: Text(l10n.cameraRetake),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton.icon(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                child: reviewing
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _retakePhoto,
+                              icon: const Icon(Icons.replay),
+                              label: Text(l10n.cameraRetake),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton.icon(
+                              onPressed: _confirmPhoto,
+                              icon: const Icon(Icons.check),
+                              label: Text(l10n.cameraUsePhoto),
+                            ),
+                          ),
+                        ],
+                      )
+                    : ElevatedButton.icon(
                         onPressed: _capturing ? null : _capture,
                         icon: _capturing
                             ? const SizedBox(
@@ -181,13 +253,56 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
                             : const Icon(Icons.camera_alt),
                         label: Text(l10n.cameraCapture),
                       ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
       },
+    );
+  }
+}
+
+class _FaceThumbnailStrip extends StatelessWidget {
+  final List<Uint8List?> thumbnails;
+  final int currentIndex;
+  final void Function(int index) onTap;
+
+  const _FaceThumbnailStrip({
+    required this.thumbnails,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return SizedBox(
+      height: 64,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: thumbnails.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final bytes = thumbnails[index];
+          final isCurrent = index == currentIndex;
+          return GestureDetector(
+            onTap: () => onTap(index),
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: isCurrent ? primary : Colors.grey, width: isCurrent ? 3 : 1),
+                color: Colors.grey.withValues(alpha: 0.15),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: bytes == null
+                  ? Center(child: Text('${index + 1}'))
+                  : Image.memory(bytes, fit: BoxFit.cover),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -202,7 +317,7 @@ class _GuideGridPainter extends CustomPainter {
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
-    final side = size.shortestSide * 0.7;
+    final side = size.shortestSide * kCubeGuideSquareFraction;
     final left = (size.width - side) / 2;
     final top = (size.height - side) / 2;
 

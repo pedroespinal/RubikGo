@@ -12,27 +12,39 @@ import '../models/cube_color.dart';
 /// must always use this one shared constant, never separate numbers.
 const double kCubeGuideSquareFraction = 0.72;
 
+/// An averaged RGB color sampled from one sticker cell.
+typedef RgbSample = ({int r, int g, int b});
+
+/// A running per-cube-per-session calibration: for each cube color, the
+/// actual samples (raw RGB, before classification) the user has confirmed
+/// so far. Built up face by face — see [CameraCaptureScreen] — and reused
+/// as ground truth for classifying the remaining faces, since it reflects
+/// this exact cube's sticker material and the room's exact lighting far
+/// better than any fixed generic reference could.
+typedef ColorCalibration = Map<CubeColor, List<RgbSample>>;
+
 /// Best-effort classification of the 9 stickers of one cube face photo into
 /// the 6 standard cube colors.
 ///
-/// Classification is hue-based (HSV), not a raw RGB distance to fixed
-/// reference colors: real photos vary a lot in brightness (shadows, camera
-/// auto-exposure, warm/cool white balance), and brightness swings are
-/// exactly what make RGB-distance matching misfire — a shadowed red sticker
-/// can end up numerically closer to a "green" reference than to "red" once
+/// Without calibration data, classification is hue-based (HSV): real photos
+/// vary a lot in brightness (shadows, camera auto-exposure, warm/cool white
+/// balance), and brightness swings are exactly what make RGB-distance
+/// matching against a fixed reference misfire — a shadowed red sticker can
+/// end up numerically closer to a "green" reference than to "red" once
 /// everything gets darker. Hue stays comparatively stable under those
-/// changes, which is why real-world cube scanners classify this way.
-/// Lighting is still never perfectly controlled, so the app always routes
-/// the result through a mandatory manual correction screen.
+/// changes. But a fixed reference still can't know this particular cube's
+/// actual sticker shades (manufacturers vary a lot, especially orange/red
+/// and white/yellow), so as soon as [ColorCalibration] samples are
+/// available they take priority — nearest-neighbor against colors actually
+/// seen on this cube beats any generic guess. Lighting and calibration are
+/// still never perfect, so the app always routes the result through a
+/// mandatory manual correction step.
 class ColorDetectionService {
   const ColorDetectionService();
 
-  /// Returns the 9 detected colors (row-major, matching [CubeState]'s
-  /// sticker order) for a photo of a single face aligned to the on-screen
-  /// guide square. Only the center [kCubeGuideSquareFraction] of the photo
-  /// is analyzed — the same fraction the guide box shows on screen — so
-  /// background outside the cube never gets sampled as if it were a sticker.
-  List<CubeColor> detectFace(Uint8List imageBytes, {double guideSquareFraction = kCubeGuideSquareFraction}) {
+  /// Raw average color per cell (row-major, matching [CubeState]'s sticker
+  /// order), cropped to the on-screen guide square — no classification yet.
+  List<RgbSample> sampleFace(Uint8List imageBytes, {double guideSquareFraction = kCubeGuideSquareFraction}) {
     final decoded = img.decodeImage(imageBytes);
     if (decoded == null) {
       throw const FormatException('Could not decode the captured photo.');
@@ -42,9 +54,50 @@ class ColorDetectionService {
 
     return [
       for (var row = 0; row < 3; row++)
-        for (var col = 0; col < 3; col++) _classify(_averageCellColor(cropped, row, col)),
+        for (var col = 0; col < 3; col++) _averageCellColor(cropped, row, col),
     ];
   }
+
+  /// Samples and classifies in one step. Equivalent to
+  /// `sampleFace(...).map((s) => classifySample(s, calibration: calibration))`.
+  List<CubeColor> detectFace(
+    Uint8List imageBytes, {
+    double guideSquareFraction = kCubeGuideSquareFraction,
+    ColorCalibration? calibration,
+  }) {
+    return sampleFace(imageBytes, guideSquareFraction: guideSquareFraction)
+        .map((sample) => classifySample(sample, calibration: calibration))
+        .toList();
+  }
+
+  /// Classifies one sampled color, preferring nearest-neighbor against
+  /// [calibration] (this specific cube's confirmed colors so far) and
+  /// falling back to the generic hue-based guess for any color that
+  /// calibration has no samples for yet.
+  CubeColor classifySample(RgbSample sample, {ColorCalibration? calibration}) {
+    if (calibration != null && calibration.isNotEmpty) {
+      CubeColor? best;
+      var bestDistance = double.infinity;
+      for (final entry in calibration.entries) {
+        for (final reference in entry.value) {
+          final distance = _redmeanDistance(sample, reference);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = entry.key;
+          }
+        }
+      }
+      // Calibration rarely covers all 6 colors from a single face (a
+      // scrambled face might only show 3-4 different colors), so a sample
+      // of a color with zero calibration data would otherwise get matched
+      // to whichever calibrated color happens to be "least wrong" even if
+      // it's nothing alike — only trust the match if it's actually close.
+      if (best != null && bestDistance <= _maxCalibrationDistance) return best;
+    }
+    return _classifyByHue(sample);
+  }
+
+  static const _maxCalibrationDistance = 60.0;
 
   img.Image _cropToCenterSquare(img.Image image, double fraction) {
     final side = (min(image.width, image.height) * fraction).round();
@@ -53,7 +106,7 @@ class ColorDetectionService {
     return img.copyCrop(image, x: x, y: y, width: side, height: side);
   }
 
-  ({int r, int g, int b}) _averageCellColor(img.Image image, int row, int col) {
+  RgbSample _averageCellColor(img.Image image, int row, int col) {
     final cellW = image.width / 3;
     final cellH = image.height / 3;
     final cx = ((col + 0.5) * cellW).round();
@@ -76,7 +129,7 @@ class ColorDetectionService {
     return (r: rSum ~/ n, g: gSum ~/ n, b: bSum ~/ n);
   }
 
-  CubeColor _classify(({int r, int g, int b}) sample) {
+  CubeColor _classifyByHue(RgbSample sample) {
     final hsv = _rgbToHsv(sample.r, sample.g, sample.b);
 
     // Low saturation means "not really a color" — white, regardless of hue,
@@ -117,5 +170,20 @@ class ColorDetectionService {
     if (h < 0) h += 360;
 
     return (h: h, s: s, v: v);
+  }
+
+  /// "Redmean" weighted RGB distance — used only for calibrated
+  /// nearest-neighbor matching, where both colors come from photos taken
+  /// moments apart under the same lighting, so a simple weighted distance
+  /// is reliable (unlike comparing against a fixed generic reference).
+  double _redmeanDistance(RgbSample a, RgbSample b) {
+    final rMean = (a.r + b.r) / 2.0;
+    final dr = (a.r - b.r).toDouble();
+    final dg = (a.g - b.g).toDouble();
+    final db = (a.b - b.b).toDouble();
+    final weightR = 2 + rMean / 256;
+    final weightG = 4.0;
+    final weightB = 2 + (255 - rMean) / 256;
+    return sqrt(weightR * dr * dr + weightG * dg * dg + weightB * db * db);
   }
 }

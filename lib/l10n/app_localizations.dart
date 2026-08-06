@@ -248,6 +248,18 @@ abstract class AppLocalizations {
   /// **'Turn the flash on/off to improve color detection'**
   String get cameraToggleFlash;
 
+  /// No description provided for @cameraConfirmColorsInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the colors detected for this face. Tap a palette color, then tap any sticker to fix it.'**
+  String get cameraConfirmColorsInstructions;
+
+  /// No description provided for @cameraConfirmColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm colors'**
+  String get cameraConfirmColors;
+
   /// No description provided for @cameraCapture.
   ///
   /// In en, this message translates to:

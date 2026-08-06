@@ -29,6 +29,8 @@
   "cameraInstructions": "Align the cube face inside the grid and take the photo. Repeat for all 6 faces.",
   "cameraAnyOrderHint": "It doesn't matter which face is which or what order you photograph them in — just turn the cube and show the camera any face you haven't photographed yet.",
   "cameraToggleFlash": "Turn the flash on/off to improve color detection",
+  "cameraConfirmColorsInstructions": "Check the colors detected for this face. Tap a palette color, then tap any sticker to fix it.",
+  "cameraConfirmColors": "Confirm colors",
   "cameraCapture": "Capture",
   "cameraRetake": "Retake photo",
   "cameraUsePhoto": "Use photo",

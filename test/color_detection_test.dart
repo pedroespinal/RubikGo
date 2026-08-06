@@ -67,4 +67,36 @@ void main() {
       expect(result.every((c) => c == CubeColor.white), isTrue);
     });
   });
+
+  group('calibration overrides the generic hue guess', () {
+    test('an odd shade the hue heuristic would misread is fixed by calibration', () {
+      // A washed-out, unusually pale orange: low saturation and bright
+      // enough that the generic heuristic reads it as white, not orange.
+      const oddOrange = (r: 255, g: 235, b: 210);
+      expect(service.classifySample(oddOrange), CubeColor.white);
+
+      // Once the user has confirmed even one sticker actually is orange
+      // and looks like this under their lighting, calibration should win.
+      final calibration = {
+        CubeColor.orange: [oddOrange],
+      };
+      expect(service.classifySample(oddOrange, calibration: calibration), CubeColor.orange);
+    });
+
+    test('colors with no calibration samples yet still fall back to the hue guess', () {
+      final calibration = {
+        CubeColor.orange: [(r: 255, g: 235, b: 210)],
+      };
+      const pureGreen = (r: 0, g: 158, b: 96);
+      expect(service.classifySample(pureGreen, calibration: calibration), CubeColor.green);
+    });
+
+    test('sampleFace + classifySample together match detectFace with no calibration', () {
+      final bytes = _solidPng(0, 81, 186);
+      final samples = service.sampleFace(bytes);
+      expect(samples, hasLength(9));
+      final classified = samples.map((s) => service.classifySample(s)).toList();
+      expect(classified, service.detectFace(bytes));
+    });
+  });
 }

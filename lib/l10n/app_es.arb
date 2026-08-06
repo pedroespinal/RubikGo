@@ -29,6 +29,8 @@
   "cameraInstructions": "Alinea la cara del cubo dentro de la cuadrícula y toma la foto. Repite para las 6 caras.",
   "cameraAnyOrderHint": "No importa qué cara es cuál ni en qué orden las fotografíes: solo gira el cubo y muéstrale a la cámara una cara que no hayas fotografiado todavía.",
   "cameraToggleFlash": "Encender/apagar el flash para mejorar la detección de color",
+  "cameraConfirmColorsInstructions": "Revisa los colores detectados de esta cara. Toca un color de la paleta y luego toca cualquier sticker para corregirlo.",
+  "cameraConfirmColors": "Confirmar colores",
   "cameraCapture": "Capturar",
   "cameraRetake": "Repetir foto",
   "cameraUsePhoto": "Usar foto",

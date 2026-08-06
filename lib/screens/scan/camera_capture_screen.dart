@@ -5,17 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/cube_color.dart';
 import '../../models/cube_state.dart';
 import '../../services/color_detection_service.dart';
+import '../../widgets/single_face_color_grid.dart';
 import 'color_correction_screen.dart';
 
 /// Guides the user through photographing all 6 faces of the cube, one at a
-/// time, with a 3x3 alignment grid overlay. Every photo goes through a
-/// review step (retake or confirm) before moving on, and a thumbnail strip
-/// always shows progress across all 6 faces — so it's hard to get lost or
-/// rush past a misaligned shot. Automatic color detection then runs on the
-/// confirmed photo; the result always continues to [ColorCorrectionScreen]
-/// so misreads can still be fixed by hand.
+/// time, with a 3x3 alignment grid overlay. Every photo goes through two
+/// confirmation steps before moving on: first the photo itself (retake or
+/// use), then the 9 detected colors for that face (fix any that are wrong)
+/// — and a thumbnail strip always shows progress across all 6 faces, so
+/// it's hard to get lost or rush past a mistake.
+///
+/// Confirming colors face-by-face (rather than only once at the very end)
+/// is also what lets the app build up a [ColorCalibration] as it goes: any
+/// correction teaches it what this exact cube's colors actually look like
+/// under this exact lighting, which is far more reliable for the remaining
+/// faces than a fixed generic reference could ever be.
 class CameraCaptureScreen extends StatefulWidget {
   const CameraCaptureScreen({super.key});
 
@@ -34,7 +41,10 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   bool _capturing = false;
   bool _flashOn = false;
   Uint8List? _reviewPhotoBytes;
+  List<RgbSample>? _pendingSamples;
+  List<CubeColor>? _pendingColors;
   late CubeState _state;
+  final ColorCalibration _calibration = {};
   final List<Uint8List?> _thumbnails = List<Uint8List?>.filled(6, null);
 
   @override
@@ -113,15 +123,32 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     final bytes = _reviewPhotoBytes;
     if (bytes == null) return;
 
-    final colors = _detector.detectFace(bytes);
-    final face = CubeFace.values[_faceIndex];
-    for (var i = 0; i < 9; i++) {
-      _state.setSticker(face, i, colors[i]);
-    }
+    final samples = _detector.sampleFace(bytes);
+    final colors = samples.map((s) => _detector.classifySample(s, calibration: _calibration)).toList();
     _thumbnails[_faceIndex] = bytes;
 
+    setState(() {
+      _reviewPhotoBytes = null;
+      _pendingSamples = samples;
+      _pendingColors = colors;
+    });
+  }
+
+  void _confirmFaceColors(List<CubeColor> finalColors) {
+    final samples = _pendingSamples!;
+    final face = CubeFace.values[_faceIndex];
+    for (var i = 0; i < 9; i++) {
+      _state.setSticker(face, i, finalColors[i]);
+      // Every confirmed sticker — not just the ones that needed fixing —
+      // is a trustworthy data point for this cube's real colors.
+      _calibration.putIfAbsent(finalColors[i], () => []).add(samples[i]);
+    }
+
     final isLastFace = _faceIndex == CubeFace.values.length - 1;
-    setState(() => _reviewPhotoBytes = null);
+    setState(() {
+      _pendingSamples = null;
+      _pendingColors = null;
+    });
 
     if (isLastFace) {
       Navigator.of(context).pushReplacement(
@@ -133,7 +160,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   }
 
   void _jumpToFace(int index) {
-    if (_reviewPhotoBytes != null) return;
+    if (_reviewPhotoBytes != null || _pendingColors != null) return;
     setState(() => _faceIndex = index);
   }
 
@@ -146,7 +173,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
       appBar: AppBar(
         title: Text(l10n.cameraFaceProgress(_faceIndex + 1)),
         actions: [
-          if (_setup == _SetupState.ready && !reviewing)
+          if (_setup == _SetupState.ready && !reviewing && _pendingColors == null)
             IconButton(
               icon: Icon(_flashOn ? Icons.flash_on : Icons.flash_off),
               tooltip: l10n.cameraToggleFlash,
@@ -161,6 +188,15 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Text(l10n.cameraPermissionDenied, textAlign: TextAlign.center),
+            ),
+          ),
+        _SetupState.ready when _pendingColors != null => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: SingleFaceColorGrid(
+              initialColors: _pendingColors!,
+              instructions: l10n.cameraConfirmColorsInstructions,
+              confirmLabel: l10n.cameraConfirmColors,
+              onConfirm: _confirmFaceColors,
             ),
           ),
         _SetupState.ready => Column(

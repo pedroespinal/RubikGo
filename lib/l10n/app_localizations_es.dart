@@ -90,6 +90,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Encender/apagar el flash para mejorar la detección de color';
 
   @override
+  String get cameraConfirmColorsInstructions =>
+      'Revisa los colores detectados de esta cara. Toca un color de la paleta y luego toca cualquier sticker para corregirlo.';
+
+  @override
+  String get cameraConfirmColors => 'Confirmar colores';
+
+  @override
   String get cameraCapture => 'Capturar';
 
   @override

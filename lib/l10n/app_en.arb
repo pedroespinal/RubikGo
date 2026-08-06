@@ -56,6 +56,10 @@
   "validationUnsolvable": "This color combination doesn't match a real physical cube. Check that every sticker matches your cube and try again.",
   "validationTwistedPiece": "A piece on an edge or corner looks rotated compared to your real cube (its colors are in the wrong order). Check the stickers where two or three faces meet.",
   "validationProbableSwap": "Two stickers are likely swapped between two different spots — it's common to mix up similar colors like white/yellow or red/orange. Check each sticker against your real cube, especially near the borders between faces.",
+  "validationRotationFixTitle": "Looks like a face got rotated",
+  "validationRotationFixMessage": "The face with the {color} center looks like it was photographed rotated relative to the others — this is the most common mistake when taking the 6 photos, since it's easy to lose track of \"which way is up\" while turning the cube between shots. Want the app to rotate it automatically to fix it?",
+  "@validationRotationFixMessage": {"placeholders": {"color": {"type": "String"}}},
+  "validationRotationFixApply": "Rotate automatically",
   "validationOk": "OK",
 
   "solutionTitle": "Solution",

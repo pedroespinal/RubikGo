@@ -169,6 +169,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Two stickers are likely swapped between two different spots — it\'s common to mix up similar colors like white/yellow or red/orange. Check each sticker against your real cube, especially near the borders between faces.';
 
   @override
+  String get validationRotationFixTitle => 'Looks like a face got rotated';
+
+  @override
+  String validationRotationFixMessage(String color) {
+    return 'The face with the $color center looks like it was photographed rotated relative to the others — this is the most common mistake when taking the 6 photos, since it\'s easy to lose track of \"which way is up\" while turning the cube between shots. Want the app to rotate it automatically to fix it?';
+  }
+
+  @override
+  String get validationRotationFixApply => 'Rotate automatically';
+
+  @override
   String get validationOk => 'OK';
 
   @override

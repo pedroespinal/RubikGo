@@ -56,6 +56,10 @@
   "validationUnsolvable": "Esta combinación de colores no corresponde a un cubo físico real. Revisa que cada sticker coincida con tu cubo y vuelve a intentar.",
   "validationTwistedPiece": "Una pieza en un borde o esquina parece estar rotada respecto a como se ve en tu cubo real (sus colores no están en el orden correcto). Revisa los stickers donde se juntan dos o tres caras.",
   "validationProbableSwap": "Es probable que dos stickers estén intercambiados entre dos posiciones distintas — es común confundir colores parecidos como blanco/amarillo o rojo/naranja. Revisa cada sticker comparándolo con tu cubo real, sobre todo cerca de los bordes entre caras.",
+  "validationRotationFixTitle": "Parece que una cara quedó girada",
+  "validationRotationFixMessage": "La cara con centro {color} parece haber sido fotografiada girada respecto a las demás — es el error más común al tomar las 6 fotos, porque es fácil perder de referencia \"hacia dónde queda arriba\" al rotar el cubo entre cada foto. ¿Quieres que la app la gire automáticamente para corregirla?",
+  "@validationRotationFixMessage": {"placeholders": {"color": {"type": "String"}}},
+  "validationRotationFixApply": "Girar automáticamente",
   "validationOk": "Entendido",
 
   "solutionTitle": "Solución",

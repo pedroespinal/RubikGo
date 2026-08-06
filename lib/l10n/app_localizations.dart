@@ -380,6 +380,24 @@ abstract class AppLocalizations {
   /// **'Two stickers are likely swapped between two different spots — it\'s common to mix up similar colors like white/yellow or red/orange. Check each sticker against your real cube, especially near the borders between faces.'**
   String get validationProbableSwap;
 
+  /// No description provided for @validationRotationFixTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks like a face got rotated'**
+  String get validationRotationFixTitle;
+
+  /// No description provided for @validationRotationFixMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The face with the {color} center looks like it was photographed rotated relative to the others — this is the most common mistake when taking the 6 photos, since it\'s easy to lose track of \"which way is up\" while turning the cube between shots. Want the app to rotate it automatically to fix it?'**
+  String validationRotationFixMessage(String color);
+
+  /// No description provided for @validationRotationFixApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate automatically'**
+  String get validationRotationFixApply;
+
   /// No description provided for @validationOk.
   ///
   /// In en, this message translates to:

@@ -170,4 +170,49 @@ class CubeState {
       return null;
     }
   }
+
+  /// A copy of this state with [face]'s 9 stickers rotated in place by
+  /// [quarterTurns] * 90° clockwise (as seen looking directly at that
+  /// face). The center (index 4) is a fixed point of any rotation, so it's
+  /// unaffected either way.
+  CubeState withFaceRotated(CubeFace face, int quarterTurns) {
+    final next = copy();
+    var current = List<CubeColor?>.of(_stickers[face]!);
+    for (var turn = 0; turn < (quarterTurns % 4); turn++) {
+      current = [
+        for (var row = 0; row < 3; row++)
+          for (var col = 0; col < 3; col++) current[(2 - col) * 3 + row],
+      ];
+    }
+    next._stickers[face] = current;
+    return next;
+  }
+
+  /// If the cube is invalid only because exactly one face was photographed
+  /// rotated relative to the others — the single most common real-world
+  /// mistake, since it's easy to lose track of "which way is up" while
+  /// turning the cube between the 6 photos — returns which face and by how
+  /// many quarter turns to fix it.
+  ///
+  /// Only returns a suggestion when exactly one (face, rotation) combination
+  /// out of all 18 possible makes the cube valid — if none do, or more than
+  /// one coincidentally does (most likely on a cube with a lot of repeated
+  /// colors per face), guessing could "fix" it into a cube that doesn't
+  /// match the user's real one, so it's safer to say nothing.
+  ({CubeFace face, int quarterTurns})? findSingleFaceRotationFix() {
+    if (validate() == null) return null;
+    if (!isComplete || colorsWithWrongCount().isNotEmpty || hasDuplicateCenters) {
+      return null;
+    }
+
+    final candidates = <({CubeFace face, int quarterTurns})>[];
+    for (final face in CubeFace.values) {
+      for (final turns in [1, 2, 3]) {
+        if (withFaceRotated(face, turns).validate() == null) {
+          candidates.add((face: face, quarterTurns: turns));
+        }
+      }
+    }
+    return candidates.length == 1 ? candidates.single : null;
+  }
 }

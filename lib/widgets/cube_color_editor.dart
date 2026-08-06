@@ -56,6 +56,18 @@ class _CubeColorEditorState extends State<CubeColorEditor> {
       return;
     }
 
+    // The single most common real mistake — one face photographed rotated
+    // relative to the others — is worth trying to auto-detect and offer to
+    // fix with one tap, rather than making the user puzzle out which of the
+    // 54 stickers is supposedly wrong.
+    if (error == CubeValidationError.twistedPiece || error == CubeValidationError.probableSwap) {
+      final fix = _state.findSingleFaceRotationFix();
+      if (fix != null) {
+        _showRotationFixDialog(l10n, fix.face, fix.quarterTurns);
+        return;
+      }
+    }
+
     final message = switch (error) {
       CubeValidationError.incomplete => l10n.validationIncomplete,
       CubeValidationError.wrongColorCounts => l10n.validationColorCount(
@@ -75,6 +87,30 @@ class _CubeColorEditorState extends State<CubeColorEditor> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(l10n.validationOk),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRotationFixDialog(AppLocalizations l10n, CubeFace face, int quarterTurns) {
+    final colorName = _state.centerOf(face)!.label(l10n);
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.validationRotationFixTitle),
+        content: Text(l10n.validationRotationFixMessage(colorName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() => _state = _state.withFaceRotated(face, quarterTurns));
+            },
+            child: Text(l10n.validationRotationFixApply),
           ),
         ],
       ),

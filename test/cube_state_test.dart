@@ -90,4 +90,35 @@ void main() {
       expect(state.validate(), CubeValidationError.twistedPiece);
     });
   });
+
+  group('single-face rotation mistakes (photographed one face turned)', () {
+    test('rotating a face 90° and back is a no-op', () {
+      final state = _stateFromCube(cuber.Cube.scrambled(n: 15));
+      final roundTrip = state.withFaceRotated(CubeFace.front, 1).withFaceRotated(CubeFace.front, 3);
+      for (final face in CubeFace.values) {
+        expect(roundTrip.faceStickers(face), state.faceStickers(face));
+      }
+    });
+
+    test('a face rotated 90° relative to the others is detected and auto-fixable', () {
+      final state = _stateFromCube(cuber.Cube.scrambled(n: 15));
+      expect(state.validate(), isNull);
+
+      final mistaken = state.withFaceRotated(CubeFace.front, 1);
+      expect(mistaken.validate(), isNotNull);
+
+      final fix = mistaken.findSingleFaceRotationFix();
+      expect(fix, isNotNull);
+      expect(fix!.face, CubeFace.front);
+
+      final fixed = mistaken.withFaceRotated(fix.face, fix.quarterTurns);
+      expect(fixed.validate(), isNull);
+      expect(fixed.toCube(), state.toCube());
+    });
+
+    test('an already-valid cube has no rotation fix to suggest', () {
+      final state = _stateFromCube(cuber.Cube.scrambled(n: 15));
+      expect(state.findSingleFaceRotationFix(), isNull);
+    });
+  });
 }

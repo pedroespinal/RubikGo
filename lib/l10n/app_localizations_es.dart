@@ -170,6 +170,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'Es probable que dos stickers estén intercambiados entre dos posiciones distintas — es común confundir colores parecidos como blanco/amarillo o rojo/naranja. Revisa cada sticker comparándolo con tu cubo real, sobre todo cerca de los bordes entre caras.';
 
   @override
+  String get validationRotationFixTitle => 'Parece que una cara quedó girada';
+
+  @override
+  String validationRotationFixMessage(String color) {
+    return 'La cara con centro $color parece haber sido fotografiada girada respecto a las demás — es el error más común al tomar las 6 fotos, porque es fácil perder de referencia \"hacia dónde queda arriba\" al rotar el cubo entre cada foto. ¿Quieres que la app la gire automáticamente para corregirla?';
+  }
+
+  @override
+  String get validationRotationFixApply => 'Girar automáticamente';
+
+  @override
   String get validationOk => 'Entendido';
 
   @override

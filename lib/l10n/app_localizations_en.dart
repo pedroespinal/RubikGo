@@ -85,6 +85,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'It doesn\'t matter which face is which or what order you photograph them in — just turn the cube and show the camera any face you haven\'t photographed yet.';
 
   @override
+  String get cameraCurrentFaceHint =>
+      'The highlighted box in the diagram is the slot you\'re filling right now. It doesn\'t matter which physical face of the cube you use — just make sure it\'s one that\'s still gray.';
+
+  @override
   String get cameraToggleFlash =>
       'Turn the flash on/off to improve color detection';
 
@@ -343,7 +347,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guideScanBody =>
-      '1. Tap \"Scan with camera\" on the home screen.\n2. Hold the cube in good light and align whichever face is facing you inside the guide grid.\n3. Take the photo, check that it lines up well, and confirm with \"Use photo\". It doesn\'t matter which face is which or what order you show them in — just turn the cube to any side you haven\'t photographed yet and repeat until all 6 are done. The thumbnail strip at the bottom shows your progress and lets you tap any of them to retake it.\n4. On the correction screen, review the detected colors and fix any misidentified sticker before continuing.';
+      '1. Tap \"Scan with camera\" on the home screen.\n2. Hold the cube in good light and align whichever face is facing you inside the guide grid.\n3. Above the camera you\'ll see a small cross-shaped diagram of the 6 faces: the slot outlined in color is the one you\'re filling right now. It doesn\'t stand for a fixed physical face (\"up\", \"back\", etc.) — it just marks which of the 6 boxes in the diagram the next photo will fill. Pick any face of your real cube that still looks gray in the diagram and photograph that one.\n4. Take the photo, check that it lines up well, and confirm with \"Use photo\". Once you confirm the colors, that box in the diagram is painted with the real colors it detected, and the highlight jumps to the next gray box. The thumbnail strip at the bottom also shows your progress and lets you tap any of them to retake it.\n5. On the correction screen, review the detected colors and fix any misidentified sticker before continuing.';
 
   @override
   String get guideManualTitle => 'How to choose colors manually';

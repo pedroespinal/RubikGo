@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/cube_color.dart';
 import '../../models/cube_state.dart';
 import '../../services/color_detection_service.dart';
+import '../../widgets/cube_net_view.dart';
 import '../../widgets/single_face_color_grid.dart';
 import 'color_correction_screen.dart';
 
@@ -202,11 +203,21 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
         _SetupState.ready => Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Text(
-                  l10n.cameraAnyOrderHint,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: Column(
+                  children: [
+                    CubeNetView(
+                      colorAt: (face, index) => _state.stickerAt(face, index),
+                      highlightFace: CubeFace.values[_faceIndex],
+                      maxStickerSize: 14,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.cameraCurrentFaceHint,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
               Expanded(

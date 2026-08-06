@@ -86,6 +86,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No importa qué cara es cuál ni en qué orden las fotografíes: solo gira el cubo y muéstrale a la cámara una cara que no hayas fotografiado todavía.';
 
   @override
+  String get cameraCurrentFaceHint =>
+      'El recuadro resaltado en el diagrama es la posición que estás llenando ahora. No importa cuál cara física del cubo uses: solo asegúrate de fotografiar una que aún esté en gris.';
+
+  @override
   String get cameraToggleFlash =>
       'Encender/apagar el flash para mejorar la detección de color';
 
@@ -344,7 +348,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get guideScanBody =>
-      '1. Toca \"Escanear con cámara\" en la pantalla principal.\n2. Sostén el cubo con buena luz y alinea la cara que te quede de frente dentro de la cuadrícula guía.\n3. Toma la foto, revisa que se vea bien alineada y confirma con \"Usar foto\". No importa qué cara es cuál ni en qué orden las muestres: solo gira el cubo hacia cualquier lado que no hayas fotografiado y repite hasta completar las 6. La franja de miniaturas de abajo te muestra tu progreso y te deja tocar cualquiera para repetirla.\n4. En la pantalla de corrección, revisa los colores detectados y ajusta cualquier sticker mal identificado antes de continuar.';
+      '1. Toca \"Escanear con cámara\" en la pantalla principal.\n2. Sostén el cubo con buena luz y alinea la cara que te quede de frente dentro de la cuadrícula guía.\n3. Arriba de la cámara verás un pequeño diagrama en cruz con las 6 caras: la posición resaltada con borde de color es la que estás llenando en este momento. No representa una cara física fija (\"arriba\", \"atrás\", etc.) — solo indica cuál de las 6 casillas del diagrama se va a llenar con la próxima foto. Elige cualquier cara de tu cubo que aún se vea en gris en el diagrama y fotografíala.\n4. Toma la foto, revisa que se vea bien alineada y confirma con \"Usar foto\". Al confirmar los colores, esa casilla del diagrama se pinta con los colores reales que detectó, y el resaltado salta a la siguiente casilla gris. La franja de miniaturas de abajo también te muestra tu progreso y te deja tocar cualquiera para repetir esa foto.\n5. En la pantalla de corrección, revisa los colores detectados y ajusta cualquier sticker mal identificado antes de continuar.';
 
   @override
   String get guideManualTitle => 'Cómo elegir los colores manualmente';
